@@ -1,4 +1,4 @@
-HyperBinder on PersonaMem
+HyperBinder on PersonaMem_32K
 
 We evaluated HyperBinder on PersonaMem, a benchmark designed to test long-context memory, personalization, and precise retrieval of user-specific facts over extended interactions.
 
