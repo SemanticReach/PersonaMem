@@ -68,7 +68,7 @@ Set the following environment variables (or use a `.env` file):
 
 | Variable | Default | Description |
 |---|---|---|
-| `HB_SERVER_URL` | `http://localhost:8000` | HyperBinder server URL |
+| `HB_SERVER_URL` | `http://18.220.128.24:8000` | HyperBinder server URL |
 | `HB_API_KEY` | *(empty)* | API key for authentication |
 
 ---
