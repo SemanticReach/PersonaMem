@@ -12,7 +12,8 @@ load_dotenv()
 
 SERVER_URL    = os.getenv("HB_SERVER_URL", "http://localhost:8000")
 API_KEY       = os.getenv("HB_API_KEY", "")
-DB_NAME       = "fractal_db"
+# ✅ Updated to match the new database name
+DB_NAME       = "fractal_db_v2"  # Was "fractal_db"
 NS_PREFIX     = "personamem_32k_persona_"
 NS_FILE       = "personamem_namespaces.json"
 SPLIT         = "32k"

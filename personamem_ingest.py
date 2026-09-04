@@ -22,28 +22,28 @@ load_dotenv()
 # ── Config ────────────────────────────────────────────────────────────────────
 SERVER_URL = os.getenv("HB_SERVER_URL", "http://localhost:8000")
 API_KEY    = os.getenv("HB_API_KEY", "")
-DB_NAME    = "fractal_db"
+DB_NAME = "fractal_db_v2"  # New database name
 SPLIT      = "32k"
 NS_PREFIX  = "personamem_32k_persona_"
-EMBED_DIM  = 384
+EMBED_DIM = 1024  # Higher dimension
 VECTOR_COL = "precomputed_vectors"
 
 # ── QA Schema ─────────────────────────────────────────────────────────────────
-# question slot = semantic  →  drives the slot-search at eval time
-# answer  slot = exact      →  returned directly when question matches
+# ✅ FIXED: primary_key as object, question_id in fields
 PERSONAMEM_QA_SCHEMA = json.dumps({
     "molecule": "Row",
-    "primary_key": "question_id",
+    "primary_key": {"name": "question_id", "encoding": "exact"},  # ← FIXED
     "fields": {
-        "user_question_or_message": {"encoding": "semantic"},
-        "correct_answer":           {"encoding": "exact"},
-        "all_options":              {"encoding": "exact"},
-        "question_type":            {"encoding": "exact"},
-        "topic":                    {"encoding": "exact"},
-        "persona_id":               {"encoding": "exact"},
-        "question_id":              {"encoding": "exact"},
-        "distance_to_ref_in_blocks":          {"encoding": "exact"},
-        "distance_to_ref_proportion_in_context": {"encoding": "exact"},
+        "question_id": {"name": "question_id", "encoding": "exact"},
+        "persona_id": {"name": "persona_id", "encoding": "exact"},
+        "question_type": {"name": "question_type", "encoding": "exact"},
+        "topic": {"name": "topic", "encoding": "exact"},
+        "user_question_or_message": {"name": "user_question_or_message", "encoding": "semantic"},
+        "correct_answer": {"name": "correct_answer", "encoding": "exact"},
+        "all_options": {"name": "all_options", "encoding": "exact"},
+        "distance_to_ref_in_blocks": {"name": "distance_to_ref_in_blocks", "encoding": "exact"},
+        "distance_to_ref_proportion_in_context": {"name": "distance_to_ref_proportion_in_context", "encoding": "exact"},
+        VECTOR_COL: {"name": VECTOR_COL, "encoding": "exact"},
     },
     "field_order": [
         "question_id", "persona_id", "question_type", "topic",
@@ -138,13 +138,13 @@ def ingest_persona(persona_id: int, rows: list[dict], embed_cache: dict, timeout
         vec = embed_cache.get(question, [0.0] * EMBED_DIM)
 
         records.append({
-            "question_id":               str(row.get("question_id", "")),
-            "persona_id":                str(persona_id),
-            "question_type":             str(row.get("question_type", "")),
-            "topic":                     str(row.get("topic", "")),
-            "user_question_or_message":  question,
-            "correct_answer":            str(row.get("correct_answer", "")),
-            "all_options":               str(row.get("all_options", "")),
+            "question_id": str(row.get("question_id", "")),
+            "persona_id": str(persona_id),
+            "question_type": str(row.get("question_type", "")),
+            "topic": str(row.get("topic", "")),
+            "user_question_or_message": question,
+            "correct_answer": str(row.get("correct_answer", "")),
+            "all_options": str(row.get("all_options", "")),
             "distance_to_ref_in_blocks": str(row.get("distance_to_ref_in_blocks", "")),
             "distance_to_ref_proportion_in_context": str(
                 row.get("distance_to_ref_proportion_in_context", "")
@@ -170,6 +170,7 @@ def ingest_persona(persona_id: int, rows: list[dict], embed_cache: dict, timeout
                 "namespace":       namespace,
                 "template_schema": PERSONAMEM_QA_SCHEMA,
                 "vector_col":      VECTOR_COL,
+                "on_conflict":     "error",  # Added for clarity
             },
             timeout=timeout,
         )
